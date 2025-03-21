@@ -6,6 +6,7 @@ import re
 import time
 import typing
 import threading
+import random
 
 # Third-party imports
 import cachetools
@@ -376,7 +377,7 @@ def tracking(
     data["data"] = remap_tracking_data(trackings)
     print(f"[+] Preparing {len(trackings)} trackings to be tracked")
     if proxies:
-        # patch_proxy_connection()
+        patch_proxy_connection()
         response = requests.post(
             "https://t.17track.net/restapi/track",
             json=data,
@@ -705,6 +706,13 @@ def run_daemon_loop() -> None:
     except Exception as e:
         print(f"[!] Error in master daemon: {e}.")
 
+
+def pick_random_proxy(proxies):
+    if proxies:
+        return random.choice(proxies)
+    return None
+
+
 app = flask.Flask(__name__)
 
 @app.route("/v1/package/information", methods=["GET"])
@@ -738,11 +746,14 @@ def api_package_info() -> typing.Tuple[flask.Response, int]:
                 "slug": item.get("slug", 0),
             }
             mapped_tracking_information.append(tracking_mapping)
+
+        tracking_proxies = read_cache_json().get("TRACKING", {}).get("TRACKING_PROXY", [])
+        random_proxy = pick_random_proxy(tracking_proxies)
         tracking_status_information = tracking(
             read_cache_json=read_cache_json,
             write_cache_json=write_cache_json,
             trackings=mapped_tracking_information,
-            proxies={"all": read_cache_json().get("TRACKING").get("TRACKING_PROXY")}
+            proxies={"all": [random_proxy]}
         )
         if not tracking_status_information:
             return (
