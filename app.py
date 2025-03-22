@@ -30,6 +30,7 @@ HTTPConnectionPool = urllib3.connectionpool.HTTPConnectionPool
 HTTPSConnectionPool = urllib3.connectionpool.HTTPSConnectionPool
 PoolManager = urllib3.PoolManager
 real_get_connection = requests.adapters.HTTPAdapter.get_connection
+current_proxy_index = 0
 
 def patch_proxy_connection():
     """Patch proxy connection to chain"""
@@ -713,6 +714,14 @@ def pick_random_proxy(proxies):
     return None
 
 
+def get_next_proxy(proxies):
+    global current_proxy_index
+    proxy = proxies[current_proxy_index]
+    current_proxy_index = (current_proxy_index + 1) % len(proxies)
+    return proxy
+
+
+
 app = flask.Flask(__name__)
 
 @app.route("/v1/package/information", methods=["GET"])
@@ -747,8 +756,8 @@ def api_package_info() -> typing.Tuple[flask.Response, int]:
             }
             mapped_tracking_information.append(tracking_mapping)
 
-        tracking_proxies = read_cache_json().get("TRACKING", {}).get("TRACKING_PROXY", [])
-        random_proxy = pick_random_proxy(tracking_proxies)
+        tracking_proxies = read_cache_json()
+        random_proxy = get_next_proxy(tracking_proxies["TRACKING"]["tracking_proxy"])
         tracking_status_information = tracking(
             read_cache_json=read_cache_json,
             write_cache_json=write_cache_json,
