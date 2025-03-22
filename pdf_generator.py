@@ -131,10 +131,10 @@ def generate_labels():
     output_folder = "generated_labels"
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    
+
     template_path = "sample_template.pdf"
     generator = USPSLabelGenerator(template_path)
-    
+
     generated_files = []
     for shipping_data in payload:
         tracking_number = shipping_data.get('tracking_number', 'unknown')
@@ -142,6 +142,7 @@ def generate_labels():
         generator.generate_label(output_path, shipping_data)
         generated_files.append(output_path)
     
+
 
     if len(generated_files) == 1:
         return send_file(generated_files[0], as_attachment=True, download_name=f"{tracking_number}.pdf")
