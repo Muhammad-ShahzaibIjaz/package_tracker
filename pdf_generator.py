@@ -4,7 +4,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.graphics.barcode import code128
-from reportlab.graphics.shapes import Drawing, Rect
+from reportlab.graphics.shapes import Drawing
 from reportlab.graphics import renderPDF
 from PyPDF2 import PdfReader, PdfWriter
 from io import BytesIO
@@ -95,11 +95,6 @@ class USPSLabelGenerator:
 
         formatted_tracking_number = format_tracking_number(tracking_number)
         can.drawString(60, 55, formatted_tracking_number)
-        
-        # Add square box with text
-        can.rect(180, 249, 40, 20, stroke=1, fill=0)
-        can.setFont("Helvetica", 10)
-        can.drawString(188, 255, "C082")
 
         can.save()
         
